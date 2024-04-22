@@ -20,6 +20,11 @@ SCREEN_WIDTH = 288
 SCREEN_HEIGHT = 512
 FPS = 15
 
+# TODO:
+# fix pipe generation
+# add score to UI
+# add bird physics
+
 class Game:
 
     def __init__(self):
@@ -44,16 +49,15 @@ class Game:
         self.base_x1 = 0
         self.base_x2 = BASE_WIDTH
         
-        for i in range(0, 1000, 200):
-            self.pipes.append(self.generate_pipe(i))
+        self.pipes.append(self.generate_pipe())
+        self.pipes.append(self.generate_pipe(200))
+        self.pipes.append(self.generate_pipe(400))
 
         self.bird.down()
 
     def generate_pipe(self, x_offset=0):
 
-        # generate x based of the last pipe's x
-
-        new_x = 500 + x_offset
+        new_x = 400 + x_offset
         new_y_up = random.randint(self.height-350, self.height-100)
         new_y_down = new_y_up-100-320
 
@@ -62,7 +66,7 @@ class Game:
     def update_pipes(self):
 
         if self.pipes[0][0].x < -(PIPE_WIDTH+10):
-            self.pipes.append(self.generate_pipe(800))
+            self.pipes.append(self.generate_pipe(200))
         
     def update_ui(self):
 
@@ -74,7 +78,6 @@ class Game:
         
         self.bird.draw(self.screen)
 
-        # there is a gap between sprites
         self.screen.blit(BASE, (self.base_x1, 425))
         self.screen.blit(BASE, (self.base_x2, 425))
 
