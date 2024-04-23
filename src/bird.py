@@ -9,6 +9,7 @@ class Bird:
         self.x = 100
         self.y = screen_height//2
 
+        self.acceleration = 0.1
         self.velocity = 0
 
         self.image = BIRD
@@ -23,10 +24,12 @@ class Bird:
         self._mask = new_mask
     
     def up(self):
-        self.velocity = -5
+        self.velocity = 2.5
+        self.y -= 15
+        self.y += self.velocity
 
     def down(self):
-        self.velocity = 5
+        self.velocity += self.velocity * self.acceleration
 
     def move(self):
         self.y += self.velocity
