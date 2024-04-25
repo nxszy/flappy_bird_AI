@@ -10,6 +10,8 @@ class Model:
 
         self.Q_model = self.build_model()
 
+        self.save_file = 'model_weights.h5'
+
     def build_model(self):
 
         inputs = tf.keras.Input(shape=(self.n_in,), name='state')
@@ -21,12 +23,6 @@ class Model:
         model.summary()
 
         return model
-
-
-    def get_Q_value(self, next_state, reward):
-        
-        q_value = np.amax(self.Q_model.predict(next_state)[0])
-        q_value *= self.gamma
-        q_value += reward
-        
-        return q_value
+    
+    def save_model(self):
+        self.Q_model.save_weights(self.save_file)

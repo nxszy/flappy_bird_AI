@@ -3,13 +3,14 @@ import random
 from collections import deque
 from pipe import Pipe
 from bird import Bird
+import numpy as np
 
 pygame.init()
 
 # const
 SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 512
-FPS = 20
+FPS = 240
 
 # assets
 BASE = pygame.image.load("./assets/base.png")
@@ -20,6 +21,7 @@ BASE_WIDTH = BASE.get_width()
 PIPE_UP = pygame.image.load("./assets/pipe-green.png")
 PIPE_DOWN = pygame.transform.flip(PIPE_UP, False, True)
 PIPE_WIDTH = PIPE_UP.get_width()
+PIPE_HEIGHT = PIPE_UP.get_height()
 
 BACKGROUND = pygame.transform.scale(pygame.image.load("./assets/background-day.png"), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
@@ -48,7 +50,7 @@ class Game:
         self.scroll_speed = 5
 
         self.jump_timer = 0
-        self.jump_delay = 75
+        self.jump_delay = 125
 
         self.reset()
 
@@ -125,7 +127,7 @@ class Game:
                 or self.bird.mask.overlap(pipe_down.mask, (offset_x, offset_y_down)):
                 return True
         
-        if self.bird.y >= 400:
+        if self.bird.y >= 400 or self.bird.y < -50:
             return True
         
         return False
@@ -161,10 +163,28 @@ class Game:
         self.scroll()
         self.update_ui()
 
+        closest_pipes = [p for p in self.pipes if p[0].scored == False][0]
+        if closest_pipes[0].y + PIPE_HEIGHT < self.bird.y < closest_pipes[1].y:
+            reward += 25
+
         if self.check_collision():
-            reward -= 5
+            reward -= 50
             return True, self.score, reward
         
         self.clock.tick(FPS)
 
         return False, self.score, reward
+
+    def get_state(self):
+        closest_pipes = [p for p in self.pipes if p[0].scored == False][0]
+        c_pipe_down, c_pipe_up = closest_pipes
+
+        state = [
+            self.bird.y < c_pipe_down.y,
+            c_pipe_down.y < self.bird.y < c_pipe_up.y,
+            self.bird.y > c_pipe_up.y,
+            self.bird.velocity,
+            self.bird.x - c_pipe_up.x
+        ]
+
+        return np.array(state, dtype=float).reshape(1,5)
