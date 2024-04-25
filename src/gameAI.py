@@ -154,7 +154,7 @@ class Game:
             self.bird.up()
         
         for pipe_up, _ in self.pipes:
-            if self.bird.x > pipe_up.x and not pipe_up.scored:
+            if self.bird.x > pipe_up.x + PIPE_WIDTH and not pipe_up.scored:
                 reward += 5
                 self.score += 1
                 pipe_up.scored = True
@@ -164,7 +164,8 @@ class Game:
         self.update_ui()
 
         closest_pipes = [p for p in self.pipes if p[0].scored == False][0]
-        if closest_pipes[0].y + PIPE_HEIGHT < self.bird.y < closest_pipes[1].y:
+
+        if closest_pipes[1].y + PIPE_HEIGHT < self.bird.y < closest_pipes[0].y:
             reward += 25
 
         if self.check_collision():
@@ -177,14 +178,16 @@ class Game:
 
     def get_state(self):
         closest_pipes = [p for p in self.pipes if p[0].scored == False][0]
-        c_pipe_down, c_pipe_up = closest_pipes
+        c_pipe_up, c_pipe_down = closest_pipes
 
         state = [
-            self.bird.y < c_pipe_down.y,
-            c_pipe_down.y < self.bird.y < c_pipe_up.y,
+            self.bird.y < c_pipe_down.y + PIPE_HEIGHT,
+            c_pipe_down.y + PIPE_HEIGHT < self.bird.y < c_pipe_up.y,
             self.bird.y > c_pipe_up.y,
             self.bird.velocity,
-            self.bird.x - c_pipe_up.x
+            self.bird.x - c_pipe_up.x,
+            self.bird.y - c_pipe_up.y,
+            self.bird.y - c_pipe_down.y
         ]
 
-        return np.array(state, dtype=float).reshape(1,5)
+        return np.array(state, dtype=float).reshape(1,7)

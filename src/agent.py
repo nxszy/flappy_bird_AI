@@ -27,9 +27,9 @@ class Agent:
         self.epsilon_decay = self.epsilon_min / self.epsilon
         self.epsilon_decay = self.epsilon_decay ** (1.0/float(self.episodes))
 
-        self.Q_model = Model(5, 2).build_model()
+        self.Q_model = Model(7, 2).build_model()
         self.Q_model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam())
-        self.target_Q_model = Model(5,2).build_model()
+        self.target_Q_model = Model(7,2).build_model()
 
         self.update_weights()
 
@@ -113,7 +113,6 @@ def train():
             state = game.get_state()
 
             move = agent.move(state)
-            print(move)
 
             done, score, reward = game.play_step(move)
 
@@ -121,8 +120,8 @@ def train():
 
             agent.remember(state, move, next_state, reward, done)
 
-        if len(agent.memory) >= 100000:
-            agent.replay(100000)
+        if len(agent.memory) >= 64:
+            agent.replay(64)
 
         if score > record:
             record = score
