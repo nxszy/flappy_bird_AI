@@ -9,7 +9,7 @@ pygame.init()
 # const
 SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 512
-FPS = 15
+FPS = 20
 
 # assets
 BASE = pygame.image.load("./assets/base.png")
@@ -23,6 +23,8 @@ PIPE_WIDTH = PIPE_UP.get_width()
 
 BACKGROUND = pygame.transform.scale(pygame.image.load("./assets/background-day.png"), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+SCORE_IMAGES = {i : pygame.image.load(f"./assets/{i}.png") for i in range(10)}
+
 # TODO:
 # fix pipe generation
 # add score to UI
@@ -31,6 +33,8 @@ BACKGROUND = pygame.transform.scale(pygame.image.load("./assets/background-day.p
 class Game:
 
     def __init__(self):
+
+        self.idle = True
         
         self.width = SCREEN_WIDTH
         self.height = SCREEN_HEIGHT
@@ -43,6 +47,9 @@ class Game:
         self.bird = Bird(self.height)
         self.scroll_speed = 5
 
+        self.jump_timer = 0
+        self.jump_delay = 75
+
         self.reset()
 
     def reset(self):
@@ -52,10 +59,10 @@ class Game:
         
         for x_offset in (200, 375, 550):
             self.pipes.append(self.generate_pipe(x_offset))
-
-        self.bird.down()
-
+        
         self.score = 0
+
+        self.jump_timer = 0
 
     def generate_pipe(self, x_offset=0):
 
@@ -80,10 +87,31 @@ class Game:
         
         self.bird.draw(self.screen)
 
+        self.base_x1 -= self.scroll_speed
+        if self.base_x1 <= -BASE_WIDTH:
+            self.base_x1 = 0
+
+        self.base_x2 = self.base_x1 + BASE_WIDTH
+
         self.screen.blit(BASE, (self.base_x1, 425))
         self.screen.blit(BASE, (self.base_x2, 425))
 
+        self.update_score_ui()
+
         pygame.display.flip()
+
+    def update_score_ui(self):
+
+        digits = [int(d) for d in str(self.score)]
+        score_size = len(digits)
+
+        score_x = (self.width - SCORE_IMAGES[digits[0]].get_width() * score_size) // 2
+        print(score_x)
+        score_y = 50
+
+        for d in digits:
+            self.screen.blit(SCORE_IMAGES[d], (score_x, score_y))
+            score_x += SCORE_IMAGES[d].get_width()
 
     def check_collision(self):
 
@@ -103,23 +131,21 @@ class Game:
     
     def scroll(self):
 
-        self.base_x1 -= self.scroll_speed
-        if self.base_x1 <= -BASE_WIDTH:
-            self.base_x1 = 0
-
-        self.base_x2 = self.base_x1 + BASE_WIDTH
-
         for pipe_up, pipe_down in self.pipes:
             pipe_up.move()
             pipe_down.move()
 
         self.bird.move()
-        self.bird.down()
 
     def handle_user_input(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
-            self.bird.up()
+            if self.idle: 
+                self.idle = False
+                return
+            if pygame.time.get_ticks() - self.jump_timer > self.jump_delay:
+                self.bird.up()
+                self.jump_timer = pygame.time.get_ticks()
 
     def play_step(self):
         
@@ -129,7 +155,17 @@ class Game:
                 quit()
 
         self.handle_user_input()
+
+        if self.idle:
+            self.update_ui()
+            self.clock.tick(FPS)
+            return False, self.score
         
+        for pipe_up, _ in self.pipes:
+            if self.bird.x > pipe_up.x and not pipe_up.scored:
+                self.score += 1
+                pipe_up.scored = True
+
         self.update_pipes()
         self.scroll()
         self.update_ui()
@@ -143,8 +179,6 @@ class Game:
 
 if __name__ == '__main__':
     game = Game()
-
-    keys = pygame.key.get_pressed()
 
     while True:
         game_over, record = game.play_step()

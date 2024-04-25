@@ -11,6 +11,8 @@ class Pipe:
 
         self.velocity = velocity
 
+        self.scored = False
+
     @property
     def mask(self):
         return self._mask
