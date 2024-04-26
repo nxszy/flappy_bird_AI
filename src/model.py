@@ -3,14 +3,14 @@ import numpy as np
 
 class Model:
 
-    def __init__(self, n_inputs, n_outputs):
+    def __init__(self, n_inputs, n_outputs, save_file):
 
         self.n_in = n_inputs
         self.n_out = n_outputs
 
         self.Q_model = self.build_model()
 
-        self.save_file = 'model_weights.h5'
+        self.save_file = save_file
 
     def build_model(self):
 
