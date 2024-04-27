@@ -40,6 +40,9 @@ class Agent:
     def save_weigths(self):
         self.Q_model.save_weights(self.save_file)
 
+    def set_weights(self, filename):
+        self.Q_model.load_weights(filename)
+
     def update_weights(self):
         self.target_Q_model.set_weights(self.Q_model.get_weights())
 
