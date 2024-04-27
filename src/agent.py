@@ -13,7 +13,7 @@ import random
 
 class Agent:
 
-    def __init__(self, save_file, episodes=300):
+    def __init__(self, save_file=None, episodes=300):
 
         self.episodes = episodes
 
@@ -30,11 +30,15 @@ class Agent:
         self.Q_model = Model(7, 2).build_model()
         self.Q_model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam())
         self.target_Q_model = Model(7,2, save_file).build_model()
+        self.save_file = save_file
 
         self.update_weights()
 
         self.replay_counter = 0
         self.n_games = 0
+
+    def save_weigths(self):
+        self.Q_model.save_weights(self.save_file)
 
     def update_weights(self):
         self.target_Q_model.set_weights(self.Q_model.get_weights())

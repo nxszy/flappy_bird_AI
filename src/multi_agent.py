@@ -8,13 +8,13 @@ plt.ion()
 
 def train_agent(agent_id, save_file, episodes=500):
     game = Game()
-    agent = Agent(episodes, save_file)
+    agent = Agent(save_file, episodes)
     record = 0
     total_score = 0
     plot_scores = []
     plot_mean_scores = []
 
-    for ep in range(episodes + 100):
+    for ep in range(episodes + 50):
         done = False
         while not done:
             state = game.get_state()
@@ -39,7 +39,7 @@ def train_agent(agent_id, save_file, episodes=500):
         mean_score = total_score / agent.n_games
         plot_mean_scores.append(mean_score)
 
-    agent.target_Q_model.save_model()
+    agent.save_weigths()
 
     return plot_scores, plot_mean_scores
 
@@ -60,8 +60,12 @@ def plot_results(results):
     plt.show()
 
 if __name__ == '__main__':
+
     num_agents = 3
+    file_names = tuple(f"model{i}.weights.h5" for i in range(1, num_agents + 1))
+
     with Pool(num_agents) as p:
-        results = p.map(train_agent, range(1, num_agents+1), [f"model{i}.h5" for i in range(1, num_agents+1)])
+        args = zip(range(1, num_agents + 1), file_names)
+        results = p.starmap(train_agent, args)
 
     plot_results(results)

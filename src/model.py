@@ -3,7 +3,7 @@ import numpy as np
 
 class Model:
 
-    def __init__(self, n_inputs, n_outputs, save_file):
+    def __init__(self, n_inputs, n_outputs, save_file=None):
 
         self.n_in = n_inputs
         self.n_out = n_outputs
@@ -24,5 +24,5 @@ class Model:
 
         return model
     
-    def save_model(self):
-        self.Q_model.save_weights(self.save_file)
+    #def save_model(self):
+    #    self.Q_model.save_weights(self.save_file)
